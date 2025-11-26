@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QuickTap Arena - 2 Player Reflex Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #020617, #020617, #000000);
+      color: #e5e7eb;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body.neon {
+      background: radial-gradient(circle at top, #020617, #0b1120, #111827);
+    }
+
+    .game-shell {
+      width: 96%;
+      max-width: 980px;
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 24px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      padding: 16px 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 96vh;
+      overflow-y: auto;
+    }
+
+    /* HEADER */
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title-block h1 {
+      font-size: 1.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #f97316;
+    }
+
+    .title-block p {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .toggle-label {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      border-radius: 999px;
+      background: #111827;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      padding: 2px;
+      display: flex;
+      align-items: center;
+    }
+
+    .toggle-knob {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: #f97316;
+      box-shadow: 0 0 10px rgba(249, 115, 22, 0.8);
+      transform: translateX(0);
+      transition: transform 0.15s ease;
+    }
+
+    input#themeCheckbox {
+      display: none;
+    }
+
+    input#themeCheckbox:checked + .toggle-switch .toggle-knob {
+      transform: translateX(18px);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.9);
+      background: #22c55e;
+    }
+
+    body.neon .game-shell {
+      border-color: rgba(56, 189, 248, 0.8);
+      box-shadow: 0 26px 70px rgba(59, 130, 246, 0.6);
+    }
+
+    /* Lobby */
+    .section {
+      margin-top: 6px;
+    }
+
+    #lobbySection {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-radius: 18px;
+      padding: 10px;
+      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.8), #020617);
+      border: 1px dashed rgba(148, 163, 184, 0.8);
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+
+    .lobby-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .lobby-card {
+      padding: 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: radial-gradient(circle at top left, rgba(249, 115, 22, 0.2), #020617);
+    }
+
+    .lobby-card.right {
+      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.2), #020617);
+    }
+
+    .lobby-label {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+
+    .input-inline {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .input-inline input[type="text"] {
+      flex: 1;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    input[type="text"]::placeholder {
+      color: #6b7280;
+    }
+
+    .emoji-input {
+      width: 42px;
+      text-align: center;
+    }
+
+    select {
+      background: #020617;
+      color: #e5e7eb;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    .btn {
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      background: linear-gradient(135deg, #f97316, #facc15);
+      color: #111827;
+      box-shadow: 0 12px 20px rgba(250, 204, 21, 0.35);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.45);
+    }
+
+    .btn.secondary {
+      background: rgba(15, 23, 42, 0.95);
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.9);
+      box-shadow: none;
+    }
+
+    .lobby-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .lobby-footer-left {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .hint-text {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+
+    /* Game Area */
+    #gameSection {
+      margin-top: 8px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .center-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .signal-circle {
+      width: 150px;
+      height: 150px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top, #020617, #020617);
+      border: 4px solid #4b5563;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      text-align: center;
+      transition: background 0.18s ease, border 0.18s ease, transform 0.1s ease,
+        box-shadow 0.18s ease;
+      box-shadow: 0 0 25px rgba(15, 23, 42, 0.9);
+    }
+
+    .signal-red {
+      background: radial-gradient(circle at top, #7f1d1d, #450a0a);
+      border-color: #ef4444;
+      box-shadow: 0 0 30px rgba(248, 113, 113, 0.8);
+    }
+
+    .signal-yellow {
+      background: radial-gradient(circle at top, #854d0e, #451a03);
+      border-color: #eab308;
+      box-shadow: 0 0 32px rgba(234, 179, 8, 0.85);
+    }
+
+    .signal-green {
+      background: radial-gradient(circle at top, #22c55e, #15803d);
+      border-color: #22c55e;
+      box-shadow: 0 0 36px rgba(34, 197, 94, 0.95);
+      transform: scale(1.05);
+    }
+
+    .signal-early {
+      background: radial-gradient(circle at top, #b91c1c, #7f1d1d);
+      border-color: #f97316;
+      box-shadow: 0 0 38px rgba(248, 113, 113, 0.95);
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .status-text {
+      font-size: 0.85rem;
+      color: #e5e7eb;
+    }
+
+    .round-text {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    /* Players */
+    .players {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .player-card {
+      padding: 12px;
+      border-radius: 18px;
+      background: radial-gradient(circle at top left, rgba(249, 115, 22, 0.16), #020617);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .player-card.right {
+      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.16), #020617);
+    }
+
+    body.neon .player-card {
+      border-color: rgba(56, 189, 248, 0.7);
+    }
+
+    .player-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .player-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .player-tag {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      color: #9ca3af;
+    }
+
+    .score {
+      font-size: 1.6rem;
+      font-weight: 700;
+      transition: transform 0.18s ease, text-shadow 0.18s ease;
+    }
+
+    @keyframes bumpAnim {
+      0% {
+        transform: scale(1);
+      }
+      40% {
+        transform: scale(1.25);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .score.bump-anim {
+      animation: bumpAnim 0.28s ease-out;
+    }
+
+    .key-hint {
+      margin-top: 4px;
+      padding: 7px 9px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px dashed rgba(148, 163, 184, 0.65);
+      font-size: 0.78rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .key {
+      min-width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      border: 1px solid rgba(148, 163, 184, 0.9);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      background: radial-gradient(circle at top, #0f172a, #020617);
+      box-shadow: 0 5px 11px rgba(0, 0, 0, 0.7);
+    }
+
+    .winner-banner {
+      margin-top: 4px;
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #22c55e;
+      min-height: 18px;
+    }
+
+    .reaction-log {
+      margin-top: 2px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-align: center;
+      min-height: 18px;
+    }
+
+    .stats-row {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    /* Mobile Tap Areas */
+    .tap-areas {
+      margin-top: 6px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .tap-zone {
+      padding: 8px;
+      border-radius: 16px;
+      border: 1px dashed rgba(148, 163, 184, 0.8);
+      background: rgba(15, 23, 42, 0.85);
+      text-align: center;
+      font-size: 0.8rem;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .tap-zone span {
+      display: block;
+      margin-top: 3px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    /* Overlay Winner, Leaderboard, Rules */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.86);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .overlay-card {
+      width: 90%;
+      max-width: 420px;
+      background: radial-gradient(circle at top, #0b1120, #020617);
+      border-radius: 24px;
+      border: 1px solid rgba(250, 204, 21, 0.9);
+      padding: 18px 18px 16px;
+      text-align: left;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+    }
+
+    .overlay-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #facc15;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .overlay-winner {
+      font-size: 1.05rem;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .overlay-stats {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .overlay-btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 640px) {
+      .signal-circle {
+        width: 130px;
+        height: 130px;
+        font-size: 0.85rem;
+      }
+      .title-block h1 {
+        font-size: 1.4rem;
+      }
+      .player-card {
+        padding: 10px;
+      }
+      .game-shell {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-shell">
+    <div class="header-row">
+      <div class="title-block">
+        <h1>QUICKTAP ARENA</h1>
+        <p>2 Player Reflex Battle • Wait for Green • Keyboard + Mobile Taps</p>
+      </div>
+      <div class="header-right">
+        <button id="rulesBtn" class="btn secondary">Rules</button>
+        <button id="leaderboardBtn" class="btn secondary">Leaderboard</button>
+        <div class="theme-toggle">
+          <label class="toggle-label">
+            <span>Neon Mode</span>
+            <input type="checkbox" id="themeCheckbox" />
+            <div class="toggle-switch">
+              <div class="toggle-knob"></div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOBBY -->
+    <div id="lobbySection" class="section">
+      <div class="section-title">Match Lobby</div>
+      <div class="lobby-row">
+        <div class="lobby-card">
+          <div class="lobby-label">Player 1 Name & Emoji</div>
+          <div class="input-inline">
+            <input id="p1NameInput" type="text" placeholder="e.g. Don" />
+            <input
+              id="p1EmojiInput"
+              type="text"
+              maxlength="2"
+              class="emoji-input"
+              placeholder="🔥"
+            />
+          </div>
+          <div class="lobby-label" style="margin-top:4px;">Controls: Key A • Left Tap Zone</div>
+        </div>
+        <div class="lobby-card right">
+          <div class="lobby-label">Player 2 Name & Emoji</div>
+          <div class="input-inline">
+            <input id="p2NameInput" type="text" placeholder="e.g. Ghost" />
+            <input
+              id="p2EmojiInput"
+              type="text"
+              maxlength="2"
+              class="emoji-input"
+              placeholder="⚡"
+            />
+          </div>
+          <div class="lobby-label" style="margin-top:4px;">Controls: Key L • Right Tap Zone</div>
+        </div>
+      </div>
+      <div class="lobby-footer">
+        <div class="lobby-footer-left">
+          <div class="hint-text">
+            Tip: Play on laptop with friends or on mobile using the tap zones.
+          </div>
+          <div>
+            <span class="lobby-label" style="margin-bottom:0;">Game Mode:&nbsp;</span>
+            <select id="modeSelect">
+              <option value="3">First to 3 (Quick)</option>
+              <option value="5" selected>First to 5 (Standard)</option>
+              <option value="10">First to 10 (Long)</option>
+            </select>
+          </div>
+        </div>
+        <button id="startMatchBtn" class="btn">Start Match</button>
+      </div>
+    </div>
+
+    <!-- GAME -->
+    <div id="gameSection" class="section">
+      <div class="center-area">
+        <div id="signalCircle" class="signal-circle">
+          WAITING
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="status-text" id="statusText">
+          Match ready. Get your fingers set!
+        </div>
+        <button id="newMatchBtn" class="btn secondary">New Match</button>
+        <div class="round-text" id="roundText">First to 5 points wins</div>
+      </div>
+
+      <div class="players">
+        <div class="player-card left">
+          <div class="player-header">
+            <div>
+              <div class="player-name">
+                <span id="p1EmojiLabel">🔥</span>
+                <span id="p1NameLabel">Player 1</span>
+              </div>
+              <div class="player-tag">Key: A • Left Side</div>
+            </div>
+            <div class="score" id="scoreP1">0</div>
+          </div>
+          <div class="key-hint">
+            <span>Press when circle turns green:</span>
+            <span class="key">A</span>
+          </div>
+        </div>
+
+        <div class="player-card right">
+          <div class="player-header">
+            <div>
+              <div class="player-name">
+                <span id="p2EmojiLabel">⚡</span>
+                <span id="p2NameLabel">Player 2</span>
+              </div>
+              <div class="player-tag">Key: L • Right Side</div>
+            </div>
+            <div class="score" id="scoreP2">0</div>
+          </div>
+          <div class="key-hint">
+            <span>Press when circle turns green:</span>
+            <span class="key">L</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="winner-banner" id="winnerBanner"></div>
+      <div class="reaction-log" id="reactionLog"></div>
+      <div class="stats-row">
+        <span id="bestTimeText">Fastest Reaction: -- ms</span>
+        <span>Keyboard: A / L • Mobile: Tap on your side</span>
+      </div>
+
+      <!-- Mobile / Touch Tapping Zones -->
+      <div class="tap-areas">
+        <div id="tapZoneP1" class="tap-zone">
+          Left Player Tap Zone
+          <span>Tap for Player 1 (A)</span>
+        </div>
+        <div id="tapZoneP2" class="tap-zone">
+          Right Player Tap Zone
+          <span>Tap for Player 2 (L)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Winner Overlay -->
+  <div id="winnerOverlay" class="overlay hidden">
+    <div class="overlay-card">
+      <div class="overlay-title">MATCH OVER</div>
+      <div class="overlay-winner" id="overlayWinnerText"></div>
+      <div class="overlay-stats" id="overlayStatsText"></div>
+      <div class="overlay-btn-row">
+        <button id="overlayPlayAgainBtn" class="btn">Play Again</button>
+        <button id="overlayChangeNamesBtn" class="btn secondary">Change Names</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Overlay -->
+  <div id="leaderboardOverlay" class="overlay hidden">
+    <div class="overlay-card">
+      <div class="overlay-title">LEADERBOARD</div>
+      <div class="overlay-stats" id="leaderboardContent">
+        No matches yet. Play to fill the leaderboard.
+      </div>
+      <div class="overlay-btn-row">
+        <button id="leaderboardCloseBtn" class="btn secondary">Close</button>
+        <button id="leaderboardClearBtn" class="btn secondary">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules Overlay -->
+  <div id="rulesOverlay" class="overlay hidden">
+    <div class="overlay-card">
+      <div class="overlay-title">GAME RULES</div>
+      <div style="font-size:0.8rem;color:#d1d5db;max-height:260px;overflow:auto;margin-bottom:10px;">
+        <strong>1. Objective</strong>
+        <ul style="margin:3px 0 6px 18px;">
+          <li>Two players compete to see who has the fastest reaction time.</li>
+          <li>Be the first to tap/press after the circle turns green.</li>
+          <li>The first player to reach the target score (3 / 5 / 10) wins the match.</li>
+        </ul>
+
+        <strong>2. Players & Controls</strong>
+        <ul style="margin:3px 0 6px 18px;">
+          <li>Player 1 – Keyboard: A key • Mobile: Left Tap Zone.</li>
+          <li>Player 2 – Keyboard: L key • Mobile: Right Tap Zone.</li>
+          <li>Both players share the same device (laptop or phone).</li>
+        </ul>
+
+        <strong>3. Match Setup</strong>
+        <ul style="margin:3px 0 6px 18px;">
+          <li>Enter name and emoji for both players in the lobby.</li>
+          <li>Select game mode: First to 3 / 5 / 10 points.</li>
+          <li>Click “Start Match” to begin.</li>
+        </ul>
+
+        <strong>4. Light Signals</strong>
+        <ul style="margin:3px 0 6px 18px;">
+          <li><b>Red – “WAIT”</b>: Match started, don’t press anything.</li>
+          <li><b>Yellow – “READY”</b>: Get ready, still don’t press.</li>
+          <li><b>Green – “GO!”</b>: Press A / L or tap your side as fast as possible.</li>
+          <li>The delay from red → yellow → green is random each round.</li>
+        </ul>
+
+        <strong>5. Scoring</strong>
+        <ul style="margin:3px 0 6px 18px;">
+          <li>Correct tap after green: that player wins the round and gets +1 point.</li>
+          <li>Early tap (before green): opponent gets +1 point and “Too Early” is shown.</li>
+        </ul>
+
+        <strong>6. Winning the Match</strong>
+        <ul style="margin:3px 0 6px 18px;">
+          <li>Rounds continue until one player reaches the selected target score.</li>
+          <li>A Match Over popup shows winner, scoreline, and fastest reaction time (if any).</li>
+        </ul>
+
+        <strong>7. Leaderboard</strong>
+        <ul style="margin:3px 0 0 18px;">
+          <li>Completed matches are saved locally in the leaderboard (up to 10 recent).</li>
+          <li>You can view it via the Leaderboard button and clear all if needed.</li>
+        </ul>
+      </div>
+      <div class="overlay-btn-row">
+        <button id="rulesCloseBtn" class="btn secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const themeCheckbox = document.getElementById("themeCheckbox");
+
+    const lobbySection = document.getElementById("lobbySection");
+    const gameSection = document.getElementById("gameSection");
+
+    const p1NameInput = document.getElementById("p1NameInput");
+    const p2NameInput = document.getElementById("p2NameInput");
+    const p1EmojiInput = document.getElementById("p1EmojiInput");
+    const p2EmojiInput = document.getElementById("p2EmojiInput");
+
+    const p1NameLabel = document.getElementById("p1NameLabel");
+    const p2NameLabel = document.getElementById("p2NameLabel");
+    const p1EmojiLabel = document.getElementById("p1EmojiLabel");
+    const p2EmojiLabel = document.getElementById("p2EmojiLabel");
+
+    const startMatchBtn = document.getElementById("startMatchBtn");
+    const newMatchBtn = document.getElementById("newMatchBtn");
+    const modeSelect = document.getElementById("modeSelect");
+
+    const signalCircle = document.getElementById("signalCircle");
+    const statusText = document.getElementById("statusText");
+    const roundText = document.getElementById("roundText");
+    const scoreP1El = document.getElementById("scoreP1");
+    const scoreP2El = document.getElementById("scoreP2");
+    const winnerBanner = document.getElementById("winnerBanner");
+    const reactionLog = document.getElementById("reactionLog");
+    const bestTimeText = document.getElementById("bestTimeText");
+
+    const tapZoneP1 = document.getElementById("tapZoneP1");
+    const tapZoneP2 = document.getElementById("tapZoneP2");
+
+    const winnerOverlay = document.getElementById("winnerOverlay");
+    const overlayWinnerText = document.getElementById("overlayWinnerText");
+    const overlayStatsText = document.getElementById("overlayStatsText");
+    const overlayPlayAgainBtn = document.getElementById("overlayPlayAgainBtn");
+    const overlayChangeNamesBtn = document.getElementById("overlayChangeNamesBtn");
+
+    const leaderboardBtn = document.getElementById("leaderboardBtn");
+    const leaderboardOverlay = document.getElementById("leaderboardOverlay");
+    const leaderboardContent = document.getElementById("leaderboardContent");
+    const leaderboardCloseBtn = document.getElementById("leaderboardCloseBtn");
+    const leaderboardClearBtn = document.getElementById("leaderboardClearBtn");
+
+    const rulesBtn = document.getElementById("rulesBtn");
+    const rulesOverlay = document.getElementById("rulesOverlay");
+    const rulesCloseBtn = document.getElementById("rulesCloseBtn");
+
+    // Game State
+    let scoreP1 = 0;
+    let scoreP2 = 0;
+    let round = 0;
+    let maxScore = 5;
+
+    let gameActive = false;
+    let canTap = false;
+    let waitingForSignal = false;
+    let roundLocked = false;
+    let startTime = 0;
+
+    let timeoutYellow = null;
+    let timeoutGreen = null;
+
+    let bestReactionTime = null;
+
+    const LEADERBOARD_KEY = "quicktap_arena_leaderboard_v1";
+    let leaderboardData = [];
+
+    // Sound helper (no voice)
+    function playBeep(frequency = 800, duration = 80, volume = 0.15) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "square";
+        osc.frequency.value = frequency;
+        gain.gain.value = volume;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        setTimeout(() => {
+          osc.stop();
+          ctx.close();
+        }, duration);
+      } catch (e) {
+        // ignore if audio fails
+      }
+    }
+
+    // Theme toggle
+    themeCheckbox.addEventListener("change", () => {
+      if (themeCheckbox.checked) {
+        document.body.classList.add("neon");
+      } else {
+        document.body.classList.remove("neon");
+      }
+    });
+
+    // Best Reaction Time
+    function loadBestTime() {
+      const saved = localStorage.getItem("quicktap_arena_best_time");
+      if (saved != null) {
+        const value = parseInt(saved, 10);
+        if (!isNaN(value)) {
+          bestReactionTime = value;
+          bestTimeText.textContent = `Fastest Reaction: ${value} ms`;
+        }
+      }
+    }
+
+    function updateBestTime(newTime) {
+      if (newTime <= 0 || isNaN(newTime)) return;
+      if (bestReactionTime == null || newTime < bestReactionTime) {
+        bestReactionTime = newTime;
+        localStorage.setItem("quicktap_arena_best_time", String(newTime));
+        bestTimeText.textContent = `Fastest Reaction: ${newTime} ms (New Record!)`;
+        playBeep(1200, 200, 0.2);
+      }
+    }
+
+    loadBestTime();
+
+    // Leaderboard functions
+    function loadLeaderboard() {
+      try {
+        const raw = localStorage.getItem(LEADERBOARD_KEY);
+        if (!raw) {
+          leaderboardData = [];
+          return;
+        }
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          leaderboardData = parsed;
+        } else {
+          leaderboardData = [];
+        }
+      } catch (e) {
+        leaderboardData = [];
+      }
+    }
+
+    function saveLeaderboard() {
+      try {
+        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboardData));
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    function addMatchToLeaderboard(entry) {
+      leaderboardData.unshift(entry);
+      leaderboardData = leaderboardData.slice(0, 10);
+      saveLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      if (!leaderboardData.length) {
+        leaderboardContent.textContent =
+          "No matches yet. Play to fill the leaderboard.";
+        return;
+      }
+      let html =
+        '<div style="text-align:left;font-size:0.8rem;max-height:260px;overflow:auto;">';
+      html += "<ol style='padding-left:18px;'>";
+      leaderboardData.forEach((m) => {
+        html += `<li style="margin-bottom:4px;">
+          <strong>${m.winnerEmoji || ""} ${m.winnerName}</strong> beat 
+          ${m.loserEmoji || ""} ${m.loserName}
+          <span style="opacity:0.8;"> (${m.winnerScore}-${m.loserScore}, first to ${
+          m.maxScore
+        })</span><br/>
+          <span style="opacity:0.7;">Mode: First to ${
+            m.maxScore
+          } • ${m.timestamp}${
+          m.bestReactionTime
+            ? " • Fastest: " + m.bestReactionTime + " ms"
+            : ""
+        }</span>
+        </li>`;
+      });
+      html += "</ol></div>";
+      leaderboardContent.innerHTML = html;
+    }
+
+    loadLeaderboard();
+
+    // Utility
+    function resetSignalClasses() {
+      signalCircle.classList.remove(
+        "signal-red",
+        "signal-yellow",
+        "signal-green",
+        "signal-early"
+      );
+    }
+
+    function resetTimeouts() {
+      if (timeoutYellow) clearTimeout(timeoutYellow);
+      if (timeoutGreen) clearTimeout(timeoutGreen);
+      timeoutYellow = null;
+      timeoutGreen = null;
+    }
+
+    function updateScoresUI() {
+      scoreP1El.textContent = scoreP1;
+      scoreP2El.textContent = scoreP2;
+    }
+
+    function bumpScore(playerEl) {
+      playerEl.classList.remove("bump-anim");
+      void playerEl.offsetWidth;
+      playerEl.classList.add("bump-anim");
+    }
+
+    function endMatchIfNeeded() {
+      if (scoreP1 >= maxScore || scoreP2 >= maxScore) {
+        gameActive = false;
+        canTap = false;
+        waitingForSignal = false;
+        roundLocked = true;
+        resetTimeouts();
+
+        const winnerIsP1 = scoreP1 > scoreP2;
+        const winnerName = winnerIsP1
+          ? p1NameLabel.textContent
+          : p2NameLabel.textContent;
+        const loserName = winnerIsP1
+          ? p2NameLabel.textContent
+          : p1NameLabel.textContent;
+        const winnerEmoji = winnerIsP1 ? p1EmojiLabel.textContent : p2EmojiLabel.textContent;
+        const loserEmoji = winnerIsP1 ? p2EmojiLabel.textContent : p1EmojiLabel.textContent;
+        const winnerScore = winnerIsP1 ? scoreP1 : scoreP2;
+        const loserScore = winnerIsP1 ? scoreP2 : scoreP1;
+
+        winnerBanner.textContent = `${winnerName} wins the match!`;
+        statusText.textContent = "Match complete.";
+        resetSignalClasses();
+        signalCircle.textContent = "GAME OVER";
+
+        const bestText = bestReactionTime
+          ? " • Fastest Reaction: " + bestReactionTime + " ms"
+          : "";
+
+        overlayWinnerText.textContent = `${winnerName} is the champion!`;
+        overlayStatsText.textContent = `${winnerName}: ${winnerScore} • ${loserName}: ${loserScore} • First to ${maxScore}${bestText}`;
+        winnerOverlay.classList.remove("hidden");
+
+        const now = new Date();
+        const timestamp = now.toLocaleString();
+        addMatchToLeaderboard({
+          winnerName,
+          winnerEmoji,
+          loserName,
+          loserEmoji,
+          winnerScore,
+          loserScore,
+          maxScore,
+          bestReactionTime,
+          timestamp,
+        });
+
+        playBeep(900, 200, 0.2);
+        return true;
+      }
+      return false;
+    }
+
+    function nextRound() {
+      if (!gameActive) return;
+
+      roundLocked = false;
+      canTap = false;
+      waitingForSignal = true;
+      round++;
+      resetTimeouts();
+
+      resetSignalClasses();
+      signalCircle.classList.add("signal-red");
+      signalCircle.textContent = "WAIT";
+      statusText.textContent =
+        "Wait for green. Early tap gives point to opponent.";
+      roundText.textContent = `Round ${round} • First to ${maxScore} wins`;
+      winnerBanner.textContent = "";
+      reactionLog.textContent = "";
+
+      const totalDelay = 1500 + Math.random() * 2500;
+      const yellowDuration = 650;
+      const yellowStart = Math.max(500, totalDelay - yellowDuration);
+
+      timeoutYellow = setTimeout(() => {
+        if (!gameActive || roundLocked) return;
+        resetSignalClasses();
+        signalCircle.classList.add("signal-yellow");
+        signalCircle.textContent = "READY";
+        playBeep(600, 90);
+      }, yellowStart);
+
+      timeoutGreen = setTimeout(() => {
+        if (!gameActive || roundLocked) return;
+
+        waitingForSignal = false;
+        canTap = true;
+        startTime = performance.now();
+
+        resetSignalClasses();
+        signalCircle.classList.add("signal-green");
+        signalCircle.textContent = "GO!";
+        statusText.textContent = "Tap now! First correct tap wins.";
+        playBeep(900, 120);
+      }, totalDelay);
+    }
+
+    function handleEarlyTap(player) {
+      if (!gameActive || roundLocked) return;
+      if (!waitingForSignal && !canTap) return;
+
+      roundLocked = true;
+      canTap = false;
+      waitingForSignal = false;
+      resetTimeouts();
+
+      resetSignalClasses();
+      signalCircle.classList.add("signal-early");
+      signalCircle.textContent = "TOO EARLY";
+      playBeep(300, 130);
+
+      if (player === 1) {
+        scoreP2++;
+        bumpScore(scoreP2El);
+        reactionLog.textContent = `${p1NameLabel.textContent} tapped too early! Point to ${p2NameLabel.textContent}.`;
+      } else {
+        scoreP1++;
+        bumpScore(scoreP1El);
+        reactionLog.textContent = `${p2NameLabel.textContent} tapped too early! Point to ${p1NameLabel.textContent}.`;
+      }
+
+      updateScoresUI();
+      statusText.textContent = "Don't rush! You must wait for green.";
+
+      if (endMatchIfNeeded()) return;
+
+      setTimeout(() => {
+        nextRound();
+      }, 1400);
+    }
+
+    function handleValidTap(player) {
+      if (!gameActive || roundLocked) return;
+      if (!canTap) return;
+
+      roundLocked = true;
+      canTap = false;
+      waitingForSignal = false;
+      resetTimeouts();
+
+      const reactionTime = Math.round(performance.now() - startTime);
+      resetSignalClasses();
+      signalCircle.classList.add("signal-green");
+      signalCircle.textContent = player === 1 ? "P1 WINS" : "P2 WINS";
+      playBeep(1000, 160);
+
+      let winnerName;
+      if (player === 1) {
+        scoreP1++;
+        winnerName = p1NameLabel.textContent;
+        reactionLog.textContent = `${winnerName} wins this round in ${reactionTime} ms!`;
+        bumpScore(scoreP1El);
+      } else {
+        scoreP2++;
+        winnerName = p2NameLabel.textContent;
+        reactionLog.textContent = `${winnerName} wins this round in ${reactionTime} ms!`;
+        bumpScore(scoreP2El);
+      }
+
+      updateScoresUI();
+      updateBestTime(reactionTime);
+
+      statusText.textContent = `Nice reflex, ${winnerName}! Next round coming up.`;
+
+      if (endMatchIfNeeded()) return;
+
+      setTimeout(() => {
+        nextRound();
+      }, 1500);
+    }
+
+    // Keyboard events
+    document.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      if (!gameActive) return;
+
+      if (key === "a") {
+        if (!canTap && waitingForSignal) handleEarlyTap(1);
+        else if (canTap) handleValidTap(1);
+      } else if (key === "l") {
+        if (!canTap && waitingForSignal) handleEarlyTap(2);
+        else if (canTap) handleValidTap(2);
+      }
+    });
+
+    // Tap zones for mobile
+    function setupTapZone(zone, player) {
+      const handler = (ev) => {
+        ev.preventDefault();
+        if (!gameActive) return;
+        if (!canTap && waitingForSignal) handleEarlyTap(player);
+        else if (canTap) handleValidTap(player);
+      };
+      zone.addEventListener("click", handler);
+      zone.addEventListener("touchstart", handler, { passive: false });
+    }
+
+    setupTapZone(tapZoneP1, 1);
+    setupTapZone(tapZoneP2, 2);
+
+    // Match control
+    function startMatch() {
+      const name1 = p1NameInput.value.trim() || "Player 1";
+      const name2 = p2NameInput.value.trim() || "Player 2";
+      const emoji1 = p1EmojiInput.value.trim() || "🔥";
+      const emoji2 = p2EmojiInput.value.trim() || "⚡";
+
+      p1NameLabel.textContent = name1;
+      p2NameLabel.textContent = name2;
+      p1EmojiLabel.textContent = emoji1;
+      p2EmojiLabel.textContent = emoji2;
+
+      scoreP1 = 0;
+      scoreP2 = 0;
+      round = 0;
+      updateScoresUI();
+
+      const selectedMode = parseInt(modeSelect.value, 10);
+      maxScore = !isNaN(selectedMode) ? selectedMode : 5;
+
+      winnerBanner.textContent = "";
+      reactionLog.textContent = "";
+      resetSignalClasses();
+      signalCircle.textContent = "READY";
+      statusText.textContent = `Match started: ${name1} vs ${name2}. Wait for green.`;
+      roundText.textContent = `First to ${maxScore} points wins`;
+
+      gameActive = true;
+      canTap = false;
+      waitingForSignal = true;
+      roundLocked = false;
+
+      lobbySection.style.display = "none";
+      gameSection.style.display = "flex";
+      winnerOverlay.classList.add("hidden");
+
+      playBeep(750, 110);
+      nextRound();
+    }
+
+    function newMatchSamePlayers() {
+      winnerOverlay.classList.add("hidden");
+      startMatch();
+    }
+
+    startMatchBtn.addEventListener("click", startMatch);
+
+    newMatchBtn.addEventListener("click", () => {
+      gameActive = false;
+      resetTimeouts();
+      lobbySection.style.display = "flex";
+      gameSection.style.display = "none";
+      statusText.textContent = "Match reset. Set names and start again.";
+      resetSignalClasses();
+      signalCircle.textContent = "WAITING";
+    });
+
+    overlayPlayAgainBtn.addEventListener("click", () => {
+      newMatchSamePlayers();
+    });
+
+    overlayChangeNamesBtn.addEventListener("click", () => {
+      winnerOverlay.classList.add("hidden");
+      gameActive = false;
+      resetTimeouts();
+      lobbySection.style.display = "flex";
+      gameSection.style.display = "none";
+      resetSignalClasses();
+      signalCircle.textContent = "WAITING";
+    });
+
+    // Leaderboard buttons
+    leaderboardBtn.addEventListener("click", () => {
+      renderLeaderboard();
+      leaderboardOverlay.classList.remove("hidden");
+    });
+
+    leaderboardCloseBtn.addEventListener("click", () => {
+      leaderboardOverlay.classList.add("hidden");
+    });
+
+    leaderboardClearBtn.addEventListener("click", () => {
+      if (!confirm("Clear all leaderboard data?")) return;
+      leaderboardData = [];
+      saveLeaderboard();
+      renderLeaderboard();
+    });
+
+    // Rules overlay
+    rulesBtn.addEventListener("click", () => {
+      rulesOverlay.classList.remove("hidden");
+    });
+
+    rulesCloseBtn.addEventListener("click", () => {
+      rulesOverlay.classList.add("hidden");
+    });
+  </script>
+</body>
+</html>
